@@ -23,6 +23,8 @@ The following requirements are a very global list of features your app should ha
 
 Users must sign in to see anything except the sign-in page.
 Users should be able to sign in using your chosen authentication method.
+
+
 Users can send follow requests to other users.
 Users can create posts (begin with text only).
 Users can like posts.
