@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react'
 
 export default function Layout({
@@ -6,6 +7,8 @@ export default function Layout({
     children: React.ReactNode;
 }>) {
     return (
-        <div>{children}</div>
+        <div><Link href={'/api/auth/signout'}>
+            Sign Out
+        </Link>{children}</div>
     )
 }
