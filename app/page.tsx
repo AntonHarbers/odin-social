@@ -19,14 +19,12 @@ export default function Home() {
   const { register, handleSubmit, formState: { errors } } = useForm<Inpus>();
 
   const onSubmit: SubmitHandler<Inpus> = (data) => {
-    console.log(data)
-
     "use server"
 
     if (!session) return
     if (!session.user?.email) return
 
-    
+
   }
 
   useEffect(() => {
