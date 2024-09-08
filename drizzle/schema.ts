@@ -20,3 +20,18 @@ export const UsersTable = pgTable(
     };
   }
 );
+
+export const PostsTable = pgTable(
+  'posts',
+  {
+    id: serial('id').primaryKey(),
+    content: text('content').notNull(),
+    user: text('user').references(() => UsersTable.id),
+    createdAt: timestamp('createdAt').defaultNow().notNull(),
+  },
+  (posts) => {
+    return {
+      uniqueIdx: uniqueIndex('uniqueIdx').on(posts.user),
+    };
+  }
+);
