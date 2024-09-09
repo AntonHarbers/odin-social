@@ -1,6 +1,9 @@
+import Link from "next/link";
 
 export default function home() {
     return (
-        <div>home</div>
+        <div>
+            <Link href={'/api/auth/signout'}>Sign out</Link>
+        </div>
     )
 }

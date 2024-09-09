@@ -1,4 +1,4 @@
-import Link from 'next/link';
+"use client"
 import React from 'react'
 
 export default function Layout({
@@ -6,9 +6,9 @@ export default function Layout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+
+
     return (
-        <div><Link href={'/api/auth/signout'}>
-            Sign Out
-        </Link>{children}</div>
+        <>{children}</>
     )
 }

@@ -45,10 +45,6 @@ export const getUserPosts = async (email: string) => {
       eq(schema.PostsTable.user, schema.UsersTable.email)
     )
     .where(eq(schema.UsersTable.email, email));
-
-  return db.query.PostsTable.findMany({
-    where: (posts, { eq }) => eq(posts.user, email),
-  });
 };
 
 export const deletePost = async (id: number) => {
