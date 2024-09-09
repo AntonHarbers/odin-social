@@ -26,12 +26,10 @@ export const PostsTable = pgTable(
   {
     id: serial('id').primaryKey(),
     content: text('content').notNull(),
-    user: text('user').references(() => UsersTable.id),
+    user: text('user').references(() => UsersTable.email),
     createdAt: timestamp('createdAt').defaultNow().notNull(),
   },
   (posts) => {
-    return {
-      uniqueIdx: uniqueIndex('uniqueIdx').on(posts.user),
-    };
+    return {};
   }
 );
