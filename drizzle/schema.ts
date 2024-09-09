@@ -13,6 +13,7 @@ export const UsersTable = pgTable(
     name: text('name').notNull(),
     email: text('email').notNull(),
     createdAt: timestamp('createdAt').defaultNow().notNull(),
+    image: text('image').notNull(),
   },
   (users) => {
     return {

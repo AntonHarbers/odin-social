@@ -1,15 +1,18 @@
 "use client"
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { Button } from './ui/button'
+import ThemeToggle from './ThemeToggle'
 
 
 
 export default function Header() {
 
     const { data: session, status } = useSession()
+
+
     return (
         <div className="flex items-center justify-between font-mono text-2xl py-4 px-10">
             <Link href={'/'} className="z-10 font-mono text-3xl font-bold">
@@ -32,6 +35,7 @@ export default function Header() {
                                 Users
                             </Link>
                         </nav>
+                        <ThemeToggle />
                         <Button>
                             <Link href={'/api/auth/signout'}>
                                 Sign Out

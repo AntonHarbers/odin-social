@@ -18,12 +18,22 @@ export const getUserByEmail = async (email: string) => {
   });
 };
 
-export const createUser = async (name: string, email: string) => {
+export const createUser = async (
+  name: string,
+  email: string,
+  image: string
+) => {
+  console.log('user');
   const user = await getUserByEmail(email);
+
+  console.log(user);
   if (!user) {
     console.log('creating user');
 
-    db.insert(schema.UsersTable).values({ name, email }).returning();
+    db.insert(schema.UsersTable)
+      .values({ name, email, image })
+      .returning()
+      .execute();
   }
 };
 

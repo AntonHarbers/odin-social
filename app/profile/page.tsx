@@ -31,8 +31,6 @@ export default function Profile() {
             fetchPosts(session.user?.email)
         }
 
-
-
     }, [session])
 
     if (isLoading) {
@@ -57,7 +55,7 @@ export default function Profile() {
                     return (
                         <div key={post.posts.id} className="p-2 border-slate-200 border m-1 w-80 flex flex-col rounded-md h-auto ">
                             <div className="w-full text-center border-b border-b-slate-200 p-2 mb-2">{post.users.name}</div>
-                            <div className="text-slate-800 p-1">
+                            <div className=" p-1">
                                 {post.posts.content}
                             </div>
                             <div className="text-slate-500 w-full text-end  text-xs">

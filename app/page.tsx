@@ -1,17 +1,16 @@
 "use client"
 
-import { createUser, getUserPosts } from "@/drizzle/db";
+import { createUser } from "@/drizzle/db";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 
 export default function Home() {
   const { data: session, status } = useSession()
-
   useEffect(() => {
     if (!session) return
     if (session.user?.name && session.user?.email) {
-      createUser(session.user?.name, session.user?.email)
+      createUser(session.user?.name, session.user?.email, session.user?.image!)
     }
   }, [session])
 
