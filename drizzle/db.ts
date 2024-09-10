@@ -60,3 +60,57 @@ export const getUserPosts = async (email: string) => {
 export const deletePost = async (id: number) => {
   db.delete(schema.PostsTable).where(eq(schema.PostsTable.id, id)).execute();
 };
+
+export const followUser = async (userEmail: string, followEmail: string) => {
+  const userData = await getUserByEmail(userEmail);
+  const followUserData = await getUserByEmail(followEmail);
+
+  const newUserFollowingArray = userData?.following?.concat(followEmail);
+  const newFollowersArray = followUserData?.followers?.concat(userEmail);
+
+  const newUserData = db
+    .update(schema.UsersTable)
+    .set({
+      following: newUserFollowingArray,
+    })
+    .where(eq(schema.UsersTable.email, userEmail))
+    .returning()
+    .execute();
+  db.update(schema.UsersTable)
+    .set({
+      followers: newFollowersArray,
+    })
+    .where(eq(schema.UsersTable.email, followEmail))
+    .execute();
+
+  return newUserData;
+};
+
+export const unfollowUser = async (userEmail: string, followEmail: string) => {
+  const userData = await getUserByEmail(userEmail);
+  const followUserData = await getUserByEmail(followEmail);
+
+  const newUserFollowingArray = userData?.following?.filter(
+    (email: string) => email !== followEmail
+  );
+  const newFollowersArray = followUserData?.followers?.filter(
+    (email: string) => email !== userEmail
+  );
+
+  const newUserData = db
+    .update(schema.UsersTable)
+    .set({
+      following: newUserFollowingArray,
+    })
+    .where(eq(schema.UsersTable.email, userEmail))
+    .returning()
+    .execute();
+  db.update(schema.UsersTable)
+    .set({
+      followers: newFollowersArray,
+    })
+    .where(eq(schema.UsersTable.email, followEmail))
+    .execute();
+
+  return newUserData;
+};

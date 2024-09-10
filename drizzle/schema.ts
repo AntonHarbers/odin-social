@@ -1,6 +1,11 @@
+import { ColumnBaseConfig, ColumnDataType, sql } from 'drizzle-orm';
 import {
+  AnyPgColumn,
+  PgColumn,
   pgTable,
+  PgTableWithColumns,
   serial,
+  TableConfig,
   text,
   timestamp,
   uniqueIndex,
@@ -14,6 +19,15 @@ export const UsersTable = pgTable(
     email: text('email').notNull(),
     createdAt: timestamp('createdAt').defaultNow().notNull(),
     image: text('image').notNull(),
+    // array of users we are following
+    following: text('following')
+      .references((): AnyPgColumn => UsersTable.email)
+      .array()
+      .default(sql`ARRAY[]::text[]`),
+    followers: text('followers')
+      .references((): AnyPgColumn => UsersTable.email)
+      .array()
+      .default(sql`ARRAY[]::text[]`),
   },
   (users) => {
     return {

@@ -5,15 +5,17 @@ import { useSession } from 'next-auth/react';
 import React from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form';
 import TypewriterComponent from 'typewriter-effect';
+import { Button } from './ui/button';
 
 type Input = {
     post: string
 }
 
 
-export default function NewPostForm(setUserPosts = null as any) {
+export default function NewPostForm({ setUserPosts = null as any }) {
+
     const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<Input>();
-    const { data: session, status } = useSession()
+    const { data: session } = useSession()
 
     const watchPost = watch("post", "")
 
@@ -37,7 +39,7 @@ export default function NewPostForm(setUserPosts = null as any) {
             </div>}
 
 
-            <input className="bg-slate-600 text-white rounded-md" type="submit" value="Post" />
+            <Button>Post</Button>
             {errors.post && <span className="text-red-500">Please enter a post</span>}
 
         </form>

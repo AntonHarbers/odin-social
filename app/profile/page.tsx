@@ -1,22 +1,29 @@
 "use client"
 
 import NewPostForm from '@/components/NewPostForm'
-import { deletePost, getUserPosts } from '@/drizzle/db'
+import { deletePost, getUserByEmail, getUserPosts } from '@/drizzle/db'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
+import Skeleton from 'react-loading-skeleton'
 
 export default function Profile() {
     const { data: session } = useSession()
 
     const [userPosts, setUserPosts] = useState([] as any[])
     const [isLoading, setIsLoading] = useState(true)
+    const [userData, setUserData] = useState({} as any)
+
     const handleDeletePost = async (id: number) => {
         if (!session) return
         if (!session.user?.email) return
         await deletePost(id)
         const postData = await getUserPosts(session.user?.email)
         setUserPosts(postData)
+    }
+
+    const setNewUserPosts = (data: any) => {
+        setUserPosts(data)
     }
 
     useEffect(() => {
@@ -26,30 +33,38 @@ export default function Profile() {
             setIsLoading(false)
         }
 
+        const fetchUserData = async (email: string) => {
+            const response = await getUserByEmail(email)
+            setUserData(response)
+            setIsLoading(false)
+            console.log(response)
+
+        }
+
         if (!session) return
         if (session.user?.name && session.user?.email) {
             fetchPosts(session.user?.email)
+            fetchUserData(session.user?.email)
         }
 
     }, [session])
 
-    if (isLoading) {
-        return <div>Loading...</div>
-    }
 
     return (
         <div>
             <div className="text-center items-center flex flex-col">
-                {session?.user?.image && <Image src={session?.user?.image} width={100} height={100} alt="profile" />}
+                {isLoading && <Skeleton />}
+                {session?.user?.image && <Image className='rounded-3xl' src={session?.user?.image} width={100} height={100} alt="profile" />}
 
                 <h1 className='text-2xl font-mono'>{session?.user?.name}</h1>
                 <div className="flex gap-2">
-                    <h1 className='text-base'>Followers: 10</h1>
-                    <h1 className='text-base'>Following: 10</h1>
+                    <h1 className='text-base'>Following: {userData.following?.length || 0}</h1>
+
+                    <h1 className='text-base'>Followers: {userData.followers?.length || 0}</h1>
                 </div>
 
             </div>
-            <NewPostForm />
+            <NewPostForm setUserPosts={setNewUserPosts} />
             <div className='flex flex-col  items-center gap-2 overflow-scroll h-[50vh]'>
                 {userPosts.sort((a, b) => new Date(b.posts.createdAt).getTime() - new Date(a.posts.createdAt).getTime()).map((post: any) => {
                     return (
