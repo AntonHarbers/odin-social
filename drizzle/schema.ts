@@ -1,11 +1,8 @@
-import { ColumnBaseConfig, ColumnDataType, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import {
   AnyPgColumn,
-  PgColumn,
   pgTable,
-  PgTableWithColumns,
   serial,
-  TableConfig,
   text,
   timestamp,
   uniqueIndex,

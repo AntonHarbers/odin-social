@@ -5,12 +5,15 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { Button } from './ui/button'
 import ThemeToggle from './ThemeToggle'
+import { useGlobalContext } from '@/context/GlobalProvider'
 
 
 
 export default function Header() {
 
     const { data: session, status } = useSession()
+    const { userData } = useGlobalContext() as any
+
 
 
     return (

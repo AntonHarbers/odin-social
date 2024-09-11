@@ -5,19 +5,16 @@ import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 import { Button } from '../../components/ui/button'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 
 export default function Users() {
     const { data: session, status } = useSession()
 
     const [userData, setUserData] = useState({} as any)
-
     const [users, setUsers] = useState([] as any)
     const [shownUsers, setShownUsers] = useState([] as any)
     const [searchInput, setSearchInput] = useState('')
-
     const [loading, setLoading] = useState(true)
-
-
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -81,7 +78,8 @@ export default function Users() {
                     <li key={user.id} className="border border-slate-400 p-4 rounded-md flex items-center gap-4 w-[50vw] min-w-72 justify-between">
                         <div className="flex items-center gap-4">
                             <Image src={user.image} alt={user.name} width={50} height={50} />
-                            {user.name}
+                            {user.email !== session?.user?.email ? <Link href={`/profile/${user.id}`}>{user.name} </Link> : user.name}
+
                         </div>
                         {(user.email !== session?.user?.email && !userData.following.includes(user.email)) && <div>
                             <Button disabled={loading} onClick={() => handleFollowBtnClick(user.email)} variant={'outline'}>Follow</Button>

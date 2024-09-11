@@ -18,6 +18,20 @@ export const getUserByEmail = async (email: string) => {
   });
 };
 
+export const getUserDataById = async (id: number) => {
+  const user = await db.query.UsersTable.findFirst({
+    where: (users, { eq }) => eq(users.id, id),
+  }).execute();
+
+  if (!user) return;
+
+  const posts = await db.query.PostsTable.findMany({
+    where: (posts, { eq }) => eq(posts.user, user?.email),
+  });
+
+  return { user, posts };
+};
+
 export const createUser = async (
   name: string,
   email: string,

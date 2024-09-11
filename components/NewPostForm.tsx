@@ -6,17 +6,18 @@ import React from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form';
 import TypewriterComponent from 'typewriter-effect';
 import { Button } from './ui/button';
+import { useGlobalContext } from '@/context/GlobalProvider';
 
 type Input = {
     post: string
 }
 
 
-export default function NewPostForm({ setUserPosts = null as any }) {
+export default function NewPostForm() {
 
     const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<Input>();
     const { data: session } = useSession()
-
+    const { setUserPosts } = useGlobalContext() as any
     const watchPost = watch("post", "")
 
 

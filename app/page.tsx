@@ -1,5 +1,6 @@
 "use client"
 
+import { useGlobalContext } from "@/context/GlobalProvider";
 import { createUser } from "@/drizzle/db";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -7,12 +8,17 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const { data: session, status } = useSession()
+  const { setUserEmail } = useGlobalContext() as any
+
   useEffect(() => {
     if (!session) return
     if (session.user?.name && session.user?.email) {
       createUser(session.user?.name, session.user?.email, session.user?.image!)
+      setUserEmail(session.user?.email)
     }
-  }, [session])
+  }, [session, setUserEmail])
+
+  // get all the posts of the user and any user they follow and display them
 
 
   if (status === 'loading') return (
