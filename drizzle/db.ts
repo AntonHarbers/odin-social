@@ -4,7 +4,7 @@ import '@/drizzle/envConfig';
 import { sql } from '@vercel/postgres';
 import { drizzle } from 'drizzle-orm/vercel-postgres';
 import * as schema from './schema';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 const db = drizzle(sql, { schema });
 
@@ -37,13 +37,10 @@ export const createUser = async (
   email: string,
   image: string
 ) => {
-  console.log('user');
   const user = await getUserByEmail(email);
 
-  console.log(user);
   if (!user) {
     console.log('creating user');
-
     db.insert(schema.UsersTable)
       .values({ name, email, image })
       .returning()
@@ -52,8 +49,6 @@ export const createUser = async (
 };
 
 export const createPost = async (post: string, userEmail: string) => {
-  console.log('ye');
-
   db.insert(schema.PostsTable)
     .values({ content: post, user: userEmail })
     .returning()
@@ -127,4 +122,25 @@ export const unfollowUser = async (userEmail: string, followEmail: string) => {
     .execute();
 
   return newUserData;
+};
+
+export const getPostsOfFollowing = async (userEmails: string[]) => {
+  const posts = await db
+    .select({
+      postId: schema.PostsTable.id,
+      postContent: schema.PostsTable.content,
+      postCreatedAt: schema.PostsTable.createdAt,
+      userName: schema.UsersTable.name,
+      userEmail: schema.UsersTable.email,
+      userImage: schema.UsersTable.image,
+      userId: schema.UsersTable.id,
+    })
+    .from(schema.PostsTable)
+    .innerJoin(
+      schema.UsersTable,
+      eq(schema.PostsTable.user, schema.UsersTable.email)
+    )
+    .where(inArray(schema.UsersTable.email, userEmails));
+
+  return posts;
 };

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import React from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form';
 import TypewriterComponent from 'typewriter-effect';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 import { useGlobalContext } from '@/context/GlobalProvider';
 
 type Input = {

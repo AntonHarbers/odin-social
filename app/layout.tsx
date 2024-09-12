@@ -3,9 +3,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import NextAuthProvider from "./NextAuthProvider";
-import Header from "@/components/Header";
-import GlobalProvider, { useGlobalContext } from "@/context/GlobalProvider";
-import { useEffect } from "react";
+import Header from "@/components/Global/Header";
+import GlobalProvider from "@/context/GlobalProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,26 +18,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-
-
-
-
   return (
     <html lang="en">
-      <GlobalProvider>
-
-        <NextAuthProvider >
-
+      <NextAuthProvider >
+        <GlobalProvider>
           <body className={inter.className}>
             <Header />
-
             {children}
           </body>
-        </NextAuthProvider>
-      </GlobalProvider>
-
-
+        </GlobalProvider>
+      </NextAuthProvider>
     </html>
   );
 }

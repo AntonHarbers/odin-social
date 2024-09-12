@@ -1,27 +1,37 @@
 "use client"
 
 import { useGlobalContext } from "@/context/GlobalProvider";
-import { createUser } from "@/drizzle/db";
+import { getPostsOfFollowing } from "@/drizzle/db";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-
 export default function Home() {
-  const { data: session, status } = useSession()
-  const { setUserEmail } = useGlobalContext() as any
+  const { status } = useSession()
+  const { userData } = useGlobalContext() as any
+
+  const [posts, setPosts] = useState([] as any)
+
 
   useEffect(() => {
-    if (!session) return
-    if (session.user?.name && session.user?.email) {
-      createUser(session.user?.name, session.user?.email, session.user?.image!)
-      setUserEmail(session.user?.email)
+
+    const fetchData = async () => {
+      const response = await getPostsOfFollowing([...userData.following, userData.email])
+      console.log(response);
+
+      setPosts(response)
     }
-  }, [session, setUserEmail])
+    if (!userData) return
+
+    fetchData()
+
+  }, [userData])
 
   // get all the posts of the user and any user they follow and display them
 
 
-  if (status === 'loading') return (
+
+
+  if (status === 'loading' || !userData) return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       Loading ...
     </main>
@@ -30,7 +40,9 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-10 gap-6">
-      Welcome
+      {posts.map((post: any) => (
+        <div key={post.postId}>{post.postContent}</div>
+      ))}
     </main>
   );
 }

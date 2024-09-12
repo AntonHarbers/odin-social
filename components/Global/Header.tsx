@@ -1,20 +1,14 @@
 "use client"
 
-import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import { Button } from './ui/button'
+import { Button } from '../ui/button'
 import ThemeToggle from './ThemeToggle'
-import { useGlobalContext } from '@/context/GlobalProvider'
-
 
 
 export default function Header() {
 
     const { data: session, status } = useSession()
-    const { userData } = useGlobalContext() as any
-
-
 
     return (
         <div className="flex items-center justify-between font-mono text-2xl py-4 px-10">
