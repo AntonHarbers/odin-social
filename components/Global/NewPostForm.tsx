@@ -7,26 +7,22 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import TypewriterComponent from 'typewriter-effect';
 import { Button } from '../ui/button';
 import { useGlobalContext } from '@/context/GlobalProvider';
-
-type Input = {
-    post: string
-}
-
+import { Post } from '@/app/lib/types';
 
 export default function NewPostForm() {
 
-    const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<Input>();
+    const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<{ post: string }>();
     const { data: session } = useSession()
-    const { setUserPosts } = useGlobalContext() as any
+    const { setUserPosts } = useGlobalContext() as { setUserPosts: React.Dispatch<React.SetStateAction<Post[]>> }
     const watchPost = watch("post", "")
 
 
-    const onSubmit: SubmitHandler<Input> = async (data) => {
+    const onSubmit: SubmitHandler<{ post: string }> = async (data) => {
         if (!session) return
         if (!session.user?.email) return
 
         await createPost(data.post, session.user?.email)
-        const postData = await getUserPosts(session.user?.email)
+        const postData: Post[] = await getUserPosts(session.user?.email)
         setUserPosts(postData)
         reset()
     }
@@ -38,7 +34,6 @@ export default function NewPostForm() {
             {watchPost.length === 0 && <div className="absolute left-6 top-6">
                 <TypewriterComponent options={{ strings: ["Whats on your mind?!"], autoStart: true, loop: true, delay: 40 }} />
             </div>}
-
 
             <Button>Post</Button>
             {errors.post && <span className="text-red-500">Please enter a post</span>}

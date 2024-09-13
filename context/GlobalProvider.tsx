@@ -1,6 +1,6 @@
 "use client"
 
-
+import { Post, UserData } from "@/app/lib/types";
 import { createUser, getUserByEmail, getUserPosts } from "@/drizzle/db";
 import { useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -12,10 +12,9 @@ export const useGlobalContext = () => {
 }
 
 const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
-    const [userData, setUserData] = useState(null as any);
-    const [userPosts, setUserPosts] = useState([] as any)
-    const [userEmail, setUserEmail] = useState(null as any)
-
+    const [userData, setUserData] = useState(null as UserData | null);
+    const [userPosts, setUserPosts] = useState([] as Post[])
+    const [userEmail, setUserEmail] = useState(null as string | null)
     const { data: session } = useSession()
 
     useEffect(() => {
@@ -29,11 +28,11 @@ const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         if (!userEmail) return
         const fetchUserData = async (email: string) => {
-            const response = await getUserByEmail(userEmail)
+            const response: UserData | null = await getUserByEmail(userEmail)
             setUserData(response)
         }
         const fetchUserPosts = async (email: string) => {
-            const postData = await getUserPosts(email)
+            const postData: Post[] = await getUserPosts(email)
             setUserPosts(postData)
         }
         fetchUserData(userEmail)

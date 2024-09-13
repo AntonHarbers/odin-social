@@ -1,24 +1,24 @@
 "use client"
 
 import NewPostForm from '@/components/Global/NewPostForm'
-import Post from '@/components/Global/Post'
+import PostListItem from '@/components/Global/PostListItem'
 import ProfileHeader from '@/components/profileComponents/ProfileHeader'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import { sortedPostList } from '../lib/sortedPostList'
+import { Post, UserData } from '../lib/types'
 
 export default function Profile() {
-    const { userData, userPosts } = useGlobalContext() as any
-
+    const { userData, userPosts } = useGlobalContext() as { userData: UserData, userPosts: Post[] };
     if (!userData || !userPosts) return null
 
     return (
         <div>
-            <ProfileHeader image={userData.image} name={userData.name} followingLength={userData.following.length} followersLength={userData.followers.length} />
+            <ProfileHeader user={userData} />
             <NewPostForm />
             <div className='flex flex-col  items-center gap-2 overflow-scroll h-[50vh]'>
-                {sortedPostList(userPosts).map((post: any) => {
+                {sortedPostList(userPosts).map((post: Post) => {
                     return (
-                        <Post key={post.posts.id} post={post.posts} username={userData.name} isSessionUser />
+                        <PostListItem key={post.id} post={post} isSessionUser />
                     )
                 })}
             </div>

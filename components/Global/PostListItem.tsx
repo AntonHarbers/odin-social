@@ -1,21 +1,29 @@
+import { Post } from '@/app/lib/types'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import { deletePost, getUserPosts } from '@/drizzle/db'
+import Image from 'next/image'
+import Link from 'next/link'
 import React from 'react'
 
-export default function Post({ post, username, isSessionUser = false }: any) {
+export default function PostListItem({ post, isSessionUser = false }: { post: Post, isSessionUser?: boolean }) {
 
-    const { userData, setUserPosts } = useGlobalContext() as any
+    const { userData, setUserPosts } = useGlobalContext() as { userData: any; setUserPosts: React.Dispatch<React.SetStateAction<Post[]>>; }
 
     const handleDeletePost = async (id: number) => {
         await deletePost(id)
-        const postData = await getUserPosts(userData.email)
+        const postData: Post[] = await getUserPosts(userData.email)
         setUserPosts(postData)
     }
 
     return (
         <div className="p-2 border-slate-200 border m-1 w-80 flex flex-col rounded-md h-auto ">
-            <div className="w-full text-center border-b border-b-slate-200 p-2 mb-2">{username}</div>
-            <div className=" p-1">
+            <Link href={`/profile/${post.authorId}`} className="w-full text-center border-b border-b-slate-200 p-2 mb-2 flex justify-start gap-x-4 items-center">
+                <Image src={post.authorImage} alt={post.authorUsername} width={40} height={40} className="rounded-md" />
+                {post.authorUsername}
+            </Link>
+
+
+            <div className=" p-1 text-center">
                 {post.content}
             </div>
             <div className="text-slate-500 w-full text-end  text-xs">

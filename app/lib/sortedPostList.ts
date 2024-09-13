@@ -1,7 +1,7 @@
-export const sortedPostList = (posts: any) => {
+import { Post } from './types';
+
+export const sortedPostList = (posts: Post[]) => {
   return posts.sort(
-    (a: any, b: any) =>
-      new Date(b.posts?.createdAt || b.createdAt).getTime() -
-      new Date(a.posts?.createdAt || a.createdAt).getTime()
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 };

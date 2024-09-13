@@ -5,29 +5,60 @@ import { sql } from '@vercel/postgres';
 import { drizzle } from 'drizzle-orm/vercel-postgres';
 import * as schema from './schema';
 import { eq, inArray } from 'drizzle-orm';
-
+import { Post, UserData } from '../app/lib/types';
 const db = drizzle(sql, { schema });
 
-export const getUsers = async () => {
-  return db.query.UsersTable.findMany();
+export const getUsers = async (): Promise<UserData[]> => {
+  try {
+    const users = await db.query.UsersTable.findMany();
+    return users;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };
 
-export const getUserByEmail = async (email: string) => {
-  return db.query.UsersTable.findFirst({
-    where: (users, { eq }) => eq(users.email, email),
-  });
+export const getUserByEmail = async (
+  email: string
+): Promise<UserData | null> => {
+  try {
+    const user = await db.query.UsersTable.findFirst({
+      where: (users, { eq }) => eq(users.email, email),
+    });
+
+    if (!user) return null;
+    return user;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 };
 
-export const getUserDataById = async (id: number) => {
+export const getUserDataById = async (
+  id: number
+): Promise<{ user: any; posts: Post[] }> => {
   const user = await db.query.UsersTable.findFirst({
     where: (users, { eq }) => eq(users.id, id),
   }).execute();
 
-  if (!user) return;
+  if (!user) return { user: null, posts: [] };
 
-  const posts = await db.query.PostsTable.findMany({
-    where: (posts, { eq }) => eq(posts.user, user?.email),
-  });
+  const posts = await db
+    .select({
+      id: schema.PostsTable.id,
+      content: schema.PostsTable.content,
+      createdAt: schema.PostsTable.createdAt,
+      authorUsername: schema.UsersTable.name,
+      authorEmail: schema.UsersTable.email,
+      authorImage: schema.UsersTable.image,
+      authorId: schema.UsersTable.id,
+    })
+    .from(schema.PostsTable)
+    .innerJoin(
+      schema.UsersTable,
+      eq(schema.PostsTable.user, schema.UsersTable.email)
+    )
+    .where(eq(schema.UsersTable.email, user.email));
 
   return { user, posts };
 };
@@ -37,110 +68,170 @@ export const createUser = async (
   email: string,
   image: string
 ) => {
-  const user = await getUserByEmail(email);
+  try {
+    const user = await getUserByEmail(email);
 
-  if (!user) {
-    console.log('creating user');
-    db.insert(schema.UsersTable)
-      .values({ name, email, image })
-      .returning()
-      .execute();
+    if (!user) {
+      console.log('creating user');
+      db.insert(schema.UsersTable).values({ name, email, image }).execute();
+    }
+  } catch (error) {
+    console.error(error);
   }
 };
 
 export const createPost = async (post: string, userEmail: string) => {
-  db.insert(schema.PostsTable)
-    .values({ content: post, user: userEmail })
-    .returning()
-    .execute();
+  try {
+    const result = await db
+      .insert(schema.PostsTable)
+      .values({ content: post, user: userEmail })
+      .returning()
+      .execute();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
-export const getUserPosts = async (email: string) => {
-  return db
-    .select()
-    .from(schema.PostsTable)
-    .innerJoin(
-      schema.UsersTable,
-      eq(schema.PostsTable.user, schema.UsersTable.email)
-    )
-    .where(eq(schema.UsersTable.email, email));
+export const getPostsOfFollowing = async (
+  userEmails: string[]
+): Promise<Post[]> => {
+  try {
+    const posts = await db
+      .select({
+        id: schema.PostsTable.id,
+        content: schema.PostsTable.content,
+        createdAt: schema.PostsTable.createdAt,
+        authorUsername: schema.UsersTable.name,
+        authorEmail: schema.UsersTable.email,
+        authorImage: schema.UsersTable.image,
+        authorId: schema.UsersTable.id,
+      })
+      .from(schema.PostsTable)
+      .innerJoin(
+        schema.UsersTable,
+        eq(schema.PostsTable.user, schema.UsersTable.email)
+      )
+      .where(inArray(schema.UsersTable.email, userEmails));
+
+    return posts;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+export const getUserPosts = async (email: string): Promise<Post[]> => {
+  try {
+    const posts = await db
+      .select({
+        id: schema.PostsTable.id,
+        content: schema.PostsTable.content,
+        createdAt: schema.PostsTable.createdAt,
+        authorUsername: schema.UsersTable.name,
+        authorEmail: schema.UsersTable.email,
+        authorImage: schema.UsersTable.image,
+        authorId: schema.UsersTable.id,
+      })
+      .from(schema.PostsTable)
+      .innerJoin(
+        schema.UsersTable,
+        eq(schema.PostsTable.user, schema.UsersTable.email)
+      )
+      .where(eq(schema.UsersTable.email, email));
+
+    return posts;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };
 
 export const deletePost = async (id: number) => {
-  db.delete(schema.PostsTable).where(eq(schema.PostsTable.id, id)).execute();
+  try {
+    const result = await db
+      .delete(schema.PostsTable)
+      .where(eq(schema.PostsTable.id, id))
+      .execute();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const followUser = async (userEmail: string, followEmail: string) => {
-  const userData = await getUserByEmail(userEmail);
-  const followUserData = await getUserByEmail(followEmail);
+  try {
+    const userData = await getUserByEmail(userEmail);
+    const followUserData = await getUserByEmail(followEmail);
 
-  const newUserFollowingArray = userData?.following?.concat(followEmail);
-  const newFollowersArray = followUserData?.followers?.concat(userEmail);
+    const newUserFollowingArray = userData?.following?.concat(followEmail);
+    const newFollowersArray = followUserData?.followers?.concat(userEmail);
 
-  const newUserData = db
-    .update(schema.UsersTable)
-    .set({
-      following: newUserFollowingArray,
-    })
-    .where(eq(schema.UsersTable.email, userEmail))
-    .returning()
-    .execute();
-  db.update(schema.UsersTable)
-    .set({
-      followers: newFollowersArray,
-    })
-    .where(eq(schema.UsersTable.email, followEmail))
-    .execute();
+    const newUserData = await db.transaction(
+      async (tx): Promise<UserData[]> => {
+        const updatedUser = await tx
+          .update(schema.UsersTable)
+          .set({
+            following: newUserFollowingArray,
+          })
+          .where(eq(schema.UsersTable.email, userEmail))
+          .returning()
+          .execute();
 
-  return newUserData;
+        await tx
+          .update(schema.UsersTable)
+          .set({
+            followers: newFollowersArray,
+          })
+          .where(eq(schema.UsersTable.email, followEmail))
+          .execute();
+
+        return updatedUser;
+      }
+    );
+
+    return newUserData;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 };
 
 export const unfollowUser = async (userEmail: string, followEmail: string) => {
-  const userData = await getUserByEmail(userEmail);
-  const followUserData = await getUserByEmail(followEmail);
+  try {
+    const userData = await getUserByEmail(userEmail);
+    const followUserData = await getUserByEmail(followEmail);
 
-  const newUserFollowingArray = userData?.following?.filter(
-    (email: string) => email !== followEmail
-  );
-  const newFollowersArray = followUserData?.followers?.filter(
-    (email: string) => email !== userEmail
-  );
+    const newUserFollowingArray = userData?.following?.filter(
+      (email: string) => email !== followEmail
+    );
+    const newFollowersArray = followUserData?.followers?.filter(
+      (email: string) => email !== userEmail
+    );
 
-  const newUserData = db
-    .update(schema.UsersTable)
-    .set({
-      following: newUserFollowingArray,
-    })
-    .where(eq(schema.UsersTable.email, userEmail))
-    .returning()
-    .execute();
-  db.update(schema.UsersTable)
-    .set({
-      followers: newFollowersArray,
-    })
-    .where(eq(schema.UsersTable.email, followEmail))
-    .execute();
+    const newUserData = await db.transaction(
+      async (tx): Promise<UserData[]> => {
+        const updatedUser = await tx
+          .update(schema.UsersTable)
+          .set({
+            following: newUserFollowingArray,
+          })
+          .where(eq(schema.UsersTable.email, userEmail))
+          .returning()
+          .execute();
 
-  return newUserData;
-};
+        await tx
+          .update(schema.UsersTable)
+          .set({
+            followers: newFollowersArray,
+          })
+          .where(eq(schema.UsersTable.email, followEmail))
+          .execute();
 
-export const getPostsOfFollowing = async (userEmails: string[]) => {
-  const posts = await db
-    .select({
-      postId: schema.PostsTable.id,
-      postContent: schema.PostsTable.content,
-      postCreatedAt: schema.PostsTable.createdAt,
-      userName: schema.UsersTable.name,
-      userEmail: schema.UsersTable.email,
-      userImage: schema.UsersTable.image,
-      userId: schema.UsersTable.id,
-    })
-    .from(schema.PostsTable)
-    .innerJoin(
-      schema.UsersTable,
-      eq(schema.PostsTable.user, schema.UsersTable.email)
-    )
-    .where(inArray(schema.UsersTable.email, userEmails));
-
-  return posts;
+        return updatedUser;
+      }
+    );
+    return newUserData;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 };

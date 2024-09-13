@@ -4,32 +4,27 @@ import { useGlobalContext } from "@/context/GlobalProvider";
 import { getPostsOfFollowing } from "@/drizzle/db";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { Post, UserData } from "./lib/types";
+import PostListItem from "@/components/Global/PostListItem";
+import { sortedPostList } from "./lib/sortedPostList";
 
 export default function Home() {
   const { status } = useSession()
-  const { userData } = useGlobalContext() as any
+  const { userData } = useGlobalContext() as { userData: UserData | null }
 
-  const [posts, setPosts] = useState([] as any)
+  const [posts, setPosts] = useState([] as Post[])
 
 
   useEffect(() => {
-
-    const fetchData = async () => {
-      const response = await getPostsOfFollowing([...userData.following, userData.email])
-      console.log(response);
-
-      setPosts(response)
-    }
     if (!userData) return
 
+    const fetchData = async () => {
+      const response: Post[] = await getPostsOfFollowing([...userData.following ?? [], userData.email])
+      setPosts(response)
+    }
+
     fetchData()
-
   }, [userData])
-
-  // get all the posts of the user and any user they follow and display them
-
-
-
 
   if (status === 'loading' || !userData) return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
@@ -37,11 +32,10 @@ export default function Home() {
     </main>
   )
 
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-10 gap-6">
-      {posts.map((post: any) => (
-        <div key={post.postId}>{post.postContent}</div>
+      {sortedPostList(posts).map((post: Post) => (
+        <PostListItem key={post.id} post={post} />
       ))}
     </main>
   );

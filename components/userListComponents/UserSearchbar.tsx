@@ -1,12 +1,13 @@
+import { UserData } from "@/app/lib/types"
 import { useState } from "react"
 
-export default function UserSearchbar({ setShownUsers, users }: any) {
+export default function UserSearchbar({ setShownUsers, users }: { setShownUsers: React.Dispatch<React.SetStateAction<UserData[]>>, users: UserData[] }) {
 
     const [searchInput, setSearchInput] = useState('')
 
     const handleSearch = () => {
         if (searchInput === '') return setShownUsers(users)
-        const filteredUsers = users.filter((user: any) => user.name.match(new RegExp(searchInput, 'i')))
+        const filteredUsers: UserData[] = users.filter((user: any) => user.name.match(new RegExp(searchInput, 'i')))
         setShownUsers(filteredUsers)
     }
 

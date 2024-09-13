@@ -1,23 +1,21 @@
 "use client"
-
 import { sortedPostList } from '@/app/lib/sortedPostList'
 import FollowButton from '@/components/Global/FollowButton'
-import Post from '@/components/Global/Post'
+import PostListItem from '@/components/Global/PostListItem'
 import ProfileHeader from '@/components/profileComponents/ProfileHeader'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import { getUserDataById } from '@/drizzle/db'
 import React, { useEffect, useState } from 'react'
+import { Post, UserData } from '@/app/lib/types'
 
 export default function UserProfile({ params }: { params: { id: string } }) {
 
-    const { userData } = useGlobalContext() as any
-    const [userPostsData, setUserPostsData] = useState([] as any)
-
+    const { userData } = useGlobalContext() as { userData: UserData | null }
+    const [userPostsData, setUserPostsData] = useState({ user: null, posts: [] } as { user: UserData | null; posts: Post[] })
 
     useEffect(() => {
         const fetchUserDataById = async () => {
-            const res = await getUserDataById(parseInt(params.id))
-            if (!res) return
+            const res: { user: UserData | null; posts: Post[] } = await getUserDataById(parseInt(params.id))
             setUserPostsData(res)
         }
         fetchUserDataById()
@@ -30,12 +28,12 @@ export default function UserProfile({ params }: { params: { id: string } }) {
 
     return (
         <div>
-            <ProfileHeader image={userPostsData.user.image} name={userPostsData.user.name} followingLength={userPostsData.user.following?.length || 0} followersLength={userPostsData.user.followers?.length || 0} />
+            <ProfileHeader user={userPostsData.user} />
             <FollowButton user={userPostsData.user} styles='w-full flex justify-center my-4' />
             <div className='flex flex-col  items-center gap-2 overflow-scroll h-[50vh]'>
-                {sortedPostList(userPostsData.posts).map((post: any) => {
+                {sortedPostList(userPostsData.posts).map((post: Post) => {
                     return (
-                        <Post key={post.id} username={userPostsData.user.name} post={post} />
+                        <PostListItem key={post.id} post={post} />
                     )
                 })}
             </div>
