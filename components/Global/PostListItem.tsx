@@ -1,18 +1,37 @@
 import { Post } from '@/app/lib/types'
 import { useGlobalContext } from '@/context/GlobalProvider'
-import { deletePost, getUserPosts } from '@/drizzle/db'
+import { deletePost, getPostsOfFollowing, getUserPosts, ToggleLike } from '@/drizzle/db'
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
+import { Button } from '../ui/button'
 
-export default function PostListItem({ post, isSessionUser = false }: { post: Post, isSessionUser?: boolean }) {
+export default function PostListItem({ post, isSessionUser = false, setPosts = () => { } }: { post: Post, isSessionUser?: boolean, setPosts?: (posts?: Post[]) => void }) {
 
     const { userData, setUserPosts } = useGlobalContext() as { userData: any; setUserPosts: React.Dispatch<React.SetStateAction<Post[]>>; }
+    const [isLoading, setIsLoading] = useState(false)
 
     const handleDeletePost = async (id: number) => {
         await deletePost(id)
         const postData: Post[] = await getUserPosts(userData.email)
         setUserPosts(postData)
+    }
+
+    const HandleToggleLike = async (id: number) => {
+        setIsLoading(true)
+        const res = await ToggleLike(id, userData.email)
+
+        if (setPosts) {
+            const response: Post[] = await getPostsOfFollowing([...userData.following ?? [], userData.email])
+            setPosts(response)
+        }
+
+        if (isSessionUser) {
+            const postData: Post[] = await getUserPosts(userData.email)
+            setUserPosts(postData)
+        }
+
+        setIsLoading(false)
     }
 
     return (
@@ -29,6 +48,12 @@ export default function PostListItem({ post, isSessionUser = false }: { post: Po
             <div className="text-slate-500 w-full text-end  text-xs">
                 {new Date(post.createdAt).toDateString()}
 
+            </div>
+            <div className='text-xl flex justify-between items-center m-2'>
+                <Button disabled={isLoading} onClick={() => HandleToggleLike(post.id)} variant={'outline'}>{post.likes.includes(userData.email) ? "Unlike" : "Like"}</Button>
+                <div>
+                    {post.likes[0] ? post.likes.length : 0} 👍
+                </div>
             </div>
             {
                 isSessionUser &&

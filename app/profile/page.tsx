@@ -9,6 +9,7 @@ import { Post, UserData } from '../lib/types'
 
 export default function Profile() {
     const { userData, userPosts } = useGlobalContext() as { userData: UserData, userPosts: Post[] };
+
     if (!userData || !userPosts) return null
 
     return (

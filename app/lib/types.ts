@@ -6,6 +6,7 @@ export type Post = {
   authorEmail: string;
   authorImage: string;
   authorId: number;
+  likes: string[];
 };
 
 export type UserData = {

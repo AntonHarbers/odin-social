@@ -17,9 +17,9 @@ export default function Home() {
 
   useEffect(() => {
     if (!userData) return
-
     const fetchData = async () => {
       const response: Post[] = await getPostsOfFollowing([...userData.following ?? [], userData.email])
+      console.log(response)
       setPosts(response)
     }
 
@@ -33,10 +33,10 @@ export default function Home() {
   )
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start p-10 gap-6">
+    <div className="flex max-h-[90vh] flex-col items-center justify-start p-10 gap-6 overflow-y-scroll">
       {sortedPostList(posts).map((post: Post) => (
-        <PostListItem key={post.id} post={post} />
+        <PostListItem key={post.id} post={post} setPosts={(posts) => setPosts(posts ?? [])} />
       ))}
-    </main>
+    </div>
   );
 }

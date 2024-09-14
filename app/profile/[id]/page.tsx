@@ -24,6 +24,10 @@ export default function UserProfile({ params }: { params: { id: string } }) {
         if (userData.id === parseInt(params.id)) window.location.href = '/profile'
     }, [params.id, userData])
 
+    function setPostDataOnUserPostData(posts: Post[]) {
+        setUserPostsData({ user: userPostsData.user, posts: posts })
+    }
+
     if (!userData || !userPostsData.user || !userPostsData.posts) return <div>Loading...</div>
 
     return (
@@ -33,7 +37,7 @@ export default function UserProfile({ params }: { params: { id: string } }) {
             <div className='flex flex-col  items-center gap-2 overflow-scroll h-[50vh]'>
                 {sortedPostList(userPostsData.posts).map((post: Post) => {
                     return (
-                        <PostListItem key={post.id} post={post} />
+                        <PostListItem key={post.id} post={post} setPosts={(posts) => setPostDataOnUserPostData(posts ?? userPostsData.posts)} />
                     )
                 })}
             </div>

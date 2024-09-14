@@ -29,11 +29,12 @@ export default function NewPostForm() {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col p-2 gap-2 relative  max-w-[400px] mx-auto">
 
-            <textarea className="border border-slate-400 p-4 rounded-md resize-none" rows={4} cols={40} aria-invalid={errors.post ? "true" : "false"}  {...register("post", { required: true, maxLength: 100 },)} />
+            <textarea className="border border-slate-400 p-4 rounded-md resize-none text-slate-800" rows={4} cols={40} aria-invalid={errors.post ? "true" : "false"}  {...register("post", { required: true, maxLength: 100 },)} />
             <div className={`absolute right-5 bottom-12 ${watchPost.length > 100 ? "text-red-500" : "text-slate-500"}`}>{watchPost.length}/100</div>
-            {watchPost.length === 0 && <div className="absolute left-6 top-6">
-                <TypewriterComponent options={{ strings: ["Whats on your mind?!"], autoStart: true, loop: true, delay: 40 }} />
-            </div>}
+            {watchPost.length === 0 &&
+                <div className="absolute left-6 top-6 text-slate-500">
+                    <TypewriterComponent options={{ strings: ["Whats on your mind?!"], autoStart: true, loop: true, delay: 40 }} />
+                </div>}
 
             <Button>Post</Button>
             {errors.post && <span className="text-red-500">Please enter a post</span>}

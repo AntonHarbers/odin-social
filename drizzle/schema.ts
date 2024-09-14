@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   AnyPgColumn,
+  integer,
   pgTable,
   serial,
   text,
@@ -42,6 +43,18 @@ export const PostsTable = pgTable(
     createdAt: timestamp('createdAt').defaultNow().notNull(),
   },
   (posts) => {
+    return {};
+  }
+);
+
+export const LikesTable = pgTable(
+  'likes',
+  {
+    id: serial('id').primaryKey(),
+    userEmail: text('userEmail').references(() => UsersTable.email),
+    postId: integer('postId').references(() => PostsTable.id),
+  },
+  (likes) => {
     return {};
   }
 );
