@@ -1,15 +1,29 @@
-import { Post } from '@/app/lib/types'
+import { Comment, Post } from '@/app/lib/types'
 import { useGlobalContext } from '@/context/GlobalProvider'
-import { deletePost, getPostsOfFollowing, getUserPosts, ToggleLike } from '@/drizzle/db'
+import { deletePost, getCommentsOfPost, getPostsOfFollowing, getUserPosts, ToggleLike } from '@/drizzle/db'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
+import CommentForm from './CommentForm'
 
 export default function PostListItem({ post, isSessionUser = false, setPosts = () => { }, userEmail = undefined }: { post: Post, isSessionUser?: boolean, setPosts?: (posts?: Post[]) => void, userEmail: string | undefined },) {
 
     const { userData, setUserPosts } = useGlobalContext() as { userData: any; setUserPosts: React.Dispatch<React.SetStateAction<Post[]>>; }
     const [isLoading, setIsLoading] = useState(false)
+
+    const [postComments, setPostCommnents] = useState([] as Comment[])
+
+    // get all the comments on this post
+
+    useEffect(() => {
+        const fetchComments = async () => {
+            const comments = await getCommentsOfPost(post.id)
+            setPostCommnents(comments)
+        }
+        // get all the comments on this post
+        fetchComments()
+    }, [post])
 
     const handleDeletePost = async (id: number) => {
         await deletePost(id)
@@ -20,9 +34,6 @@ export default function PostListItem({ post, isSessionUser = false, setPosts = (
     const HandleToggleLike = async (id: number) => {
         setIsLoading(true)
         const res = await ToggleLike(id, userData.email)
-
-
-
         if (isSessionUser) {
             const postData: Post[] = await getUserPosts(userData.email)
             setUserPosts(postData)
@@ -36,7 +47,6 @@ export default function PostListItem({ post, isSessionUser = false, setPosts = (
                 setPosts(response)
             }
         }
-
         setIsLoading(false)
     }
 
@@ -46,8 +56,6 @@ export default function PostListItem({ post, isSessionUser = false, setPosts = (
                 <Image src={post.authorImage} alt={post.authorUsername} width={40} height={40} className="rounded-md" />
                 {post.authorUsername}
             </Link>
-
-
             <div className=" p-1 text-center">
                 {post.content}
             </div>
@@ -64,6 +72,29 @@ export default function PostListItem({ post, isSessionUser = false, setPosts = (
             {
                 isSessionUser &&
                 <button onClick={() => handleDeletePost(post.id)} className="text-red-500 border-slate-200 rounded-md border m-2 mt-4">Delete Post</button>
+            }
+            <div>
+                <CommentForm postId={post.id} />
+            </div>
+            <div className='text-xl w-full text-center'>Comments:</div>
+            {
+                postComments.length ?
+                    postComments.map((comment) => {
+                        return <div key={comment.id}>
+                            <div className=" w-full justify-center p-1 items-center flex flex-col border border-slate-200 rounded-md my-1 text-xs">
+                                <div>
+                                    By: {comment.authorUsername}
+                                </div>
+                                <div className='p-2 text-lg'>
+                                    {comment.content}
+                                </div>
+                                <div className='text-slate-500 text-xs p-1'>
+                                    On: {new Date(comment.createdAt).toDateString()}
+                                </div>
+                            </div>
+                        </div>
+                    }) : <div className='text-slate-500 w-full text-center'>No Comments</div>
+
             }
         </div>
     )

@@ -73,6 +73,13 @@ export const CommentsTable = pgTable(
     author: text('user').references(() => UsersTable.email),
     postId: integer('postId').references(() => PostsTable.id),
     createdAt: timestamp('createdAt').defaultNow().notNull(),
+    // array of users who liked this comment
+    likes: text('likes')
+      .references((): AnyPgColumn => UsersTable.email, {
+        onDelete: 'cascade',
+      })
+      .array()
+      .default(sql`ARRAY[]::text[]`),
   },
   (comments) => {
     return {};

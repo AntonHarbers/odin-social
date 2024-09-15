@@ -5,7 +5,7 @@ import { sql as sqlVercel } from '@vercel/postgres';
 import { drizzle } from 'drizzle-orm/vercel-postgres';
 import * as schema from './schema';
 import { and, eq, inArray, sql } from 'drizzle-orm';
-import { Post, UserData } from '../app/lib/types';
+import { Comment, Post, UserData } from '../app/lib/types';
 
 const db = drizzle(sqlVercel, { schema });
 
@@ -75,6 +75,50 @@ export const createPost = async (post: string, userEmail: string) => {
       .execute();
   } catch (error) {
     console.error(error);
+  }
+};
+
+export const createComment = async (
+  comment: string,
+  userEmail: string,
+  postId: number
+) => {
+  try {
+    const result = await db
+      .insert(schema.CommentsTable)
+      .values({ content: comment, author: userEmail, postId: postId })
+      .returning()
+      .execute();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const getCommentsOfPost = async (postId: number): Promise<Comment[]> => {
+  try {
+    const comments = await db
+      .select({
+        id: schema.CommentsTable.id,
+        content: schema.CommentsTable.content,
+        createdAt: schema.CommentsTable.createdAt,
+        authorUsername: schema.UsersTable.name,
+        authorEmail: schema.UsersTable.email,
+        authorImage: schema.UsersTable.image,
+        authorId: schema.UsersTable.id,
+        likes: schema.CommentsTable.likes,
+      })
+      .from(schema.CommentsTable)
+      .innerJoin(
+        schema.UsersTable,
+        eq(schema.UsersTable.email, schema.CommentsTable.author)
+      )
+      .where(eq(schema.CommentsTable.postId, postId))
+
+      .execute();
+    return comments;
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 };
 
@@ -233,6 +277,9 @@ const PostQuery = async (userEmails: string[]) => {
       likes: sql<string[]>`array_agg(${schema.LikesTable.userEmail})`.as(
         'likes'
       ),
+      comments: sql<string[]>`array_agg(${schema.CommentsTable.content})`.as(
+        'comments'
+      ),
     })
     .from(schema.PostsTable)
     .innerJoin(
@@ -242,6 +289,10 @@ const PostQuery = async (userEmails: string[]) => {
     .leftJoin(
       schema.LikesTable,
       eq(schema.PostsTable.id, schema.LikesTable.postId)
+    )
+    .leftJoin(
+      schema.CommentsTable,
+      eq(schema.PostsTable.id, schema.CommentsTable.postId)
     )
     .where(inArray(schema.UsersTable.email, userEmails))
     .groupBy(
