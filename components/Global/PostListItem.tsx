@@ -6,7 +6,7 @@ import Link from 'next/link'
 import React, { useState } from 'react'
 import { Button } from '../ui/button'
 
-export default function PostListItem({ post, isSessionUser = false, setPosts = () => { } }: { post: Post, isSessionUser?: boolean, setPosts?: (posts?: Post[]) => void }) {
+export default function PostListItem({ post, isSessionUser = false, setPosts = () => { }, userEmail = undefined }: { post: Post, isSessionUser?: boolean, setPosts?: (posts?: Post[]) => void, userEmail: string | undefined },) {
 
     const { userData, setUserPosts } = useGlobalContext() as { userData: any; setUserPosts: React.Dispatch<React.SetStateAction<Post[]>>; }
     const [isLoading, setIsLoading] = useState(false)
@@ -21,14 +21,20 @@ export default function PostListItem({ post, isSessionUser = false, setPosts = (
         setIsLoading(true)
         const res = await ToggleLike(id, userData.email)
 
-        if (setPosts) {
-            const response: Post[] = await getPostsOfFollowing([...userData.following ?? [], userData.email])
-            setPosts(response)
-        }
+
 
         if (isSessionUser) {
             const postData: Post[] = await getUserPosts(userData.email)
             setUserPosts(postData)
+        } else {
+            if (userEmail) {
+                const postData: Post[] = await getPostsOfFollowing([userEmail])
+                setPosts(postData)
+
+            } else {
+                const response: Post[] = await getPostsOfFollowing([...userData.following ?? [], userData.email])
+                setPosts(response)
+            }
         }
 
         setIsLoading(false)

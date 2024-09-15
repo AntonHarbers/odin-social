@@ -39,7 +39,9 @@ export const PostsTable = pgTable(
   {
     id: serial('id').primaryKey(),
     content: text('content').notNull(),
-    user: text('user').references(() => UsersTable.email),
+    user: text('user').references(() => UsersTable.email, {
+      onDelete: 'cascade',
+    }),
     createdAt: timestamp('createdAt').defaultNow().notNull(),
   },
   (posts) => {
@@ -51,10 +53,28 @@ export const LikesTable = pgTable(
   'likes',
   {
     id: serial('id').primaryKey(),
-    userEmail: text('userEmail').references(() => UsersTable.email),
-    postId: integer('postId').references(() => PostsTable.id),
+    userEmail: text('userEmail').references(() => UsersTable.email, {
+      onDelete: 'cascade',
+    }),
+    postId: integer('postId').references(() => PostsTable.id, {
+      onDelete: 'cascade',
+    }),
   },
   (likes) => {
+    return {};
+  }
+);
+
+export const CommentsTable = pgTable(
+  'comments',
+  {
+    id: serial('id').primaryKey(),
+    content: text('content').notNull(),
+    author: text('user').references(() => UsersTable.email),
+    postId: integer('postId').references(() => PostsTable.id),
+    createdAt: timestamp('createdAt').defaultNow().notNull(),
+  },
+  (comments) => {
     return {};
   }
 );

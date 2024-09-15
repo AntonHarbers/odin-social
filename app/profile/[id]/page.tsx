@@ -37,7 +37,7 @@ export default function UserProfile({ params }: { params: { id: string } }) {
             <div className='flex flex-col  items-center gap-2 overflow-scroll h-[50vh]'>
                 {sortedPostList(userPostsData.posts).map((post: Post) => {
                     return (
-                        <PostListItem key={post.id} post={post} setPosts={(posts) => setPostDataOnUserPostData(posts ?? userPostsData.posts)} />
+                        <PostListItem key={post.id} post={post} setPosts={(posts) => setPostDataOnUserPostData(posts ?? userPostsData.posts)} userEmail={userPostsData.user?.email} />
                     )
                 })}
             </div>
