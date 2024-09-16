@@ -4,7 +4,7 @@ import '@/drizzle/envConfig';
 import { sql as sqlVercel } from '@vercel/postgres';
 import { drizzle } from 'drizzle-orm/vercel-postgres';
 import * as schema from './schema';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { Comment, Post, UserData } from '../app/lib/types';
 
 const db = drizzle(sqlVercel, { schema });
@@ -82,12 +82,26 @@ export const createComment = async (
   comment: string,
   userEmail: string,
   postId: number
-) => {
+): Promise<Comment[]> => {
   try {
-    const result = await db
+    await db
       .insert(schema.CommentsTable)
       .values({ content: comment, author: userEmail, postId: postId })
       .returning()
+      .execute();
+    const result = await getCommentsOfPost(postId);
+    return result;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+export const deleteComment = async (id: number) => {
+  try {
+    await db
+      .delete(schema.CommentsTable)
+      .where(eq(schema.CommentsTable.id, id))
       .execute();
   } catch (error) {
     console.error(error);
@@ -113,7 +127,7 @@ export const getCommentsOfPost = async (postId: number): Promise<Comment[]> => {
         eq(schema.UsersTable.email, schema.CommentsTable.author)
       )
       .where(eq(schema.CommentsTable.postId, postId))
-
+      .orderBy(desc(schema.CommentsTable.createdAt))
       .execute();
     return comments;
   } catch (error) {
@@ -262,6 +276,33 @@ export const ToggleLike = async (postId: number, userEmail: string) => {
   }
 };
 
+export const ToggleCommentLike = async (
+  postId: number,
+  commentId: number,
+  userEmail: string
+): Promise<Comment[]> => {
+  try {
+    await db
+      .update(schema.CommentsTable)
+      .set({
+        likes: sql`
+        CASE 
+          WHEN ${userEmail} = ANY(${schema.CommentsTable.likes}) THEN 
+          array_remove(${schema.CommentsTable.likes}, ${userEmail})
+          ELSE array_append(${schema.CommentsTable.likes}, ${userEmail})
+          END
+      `,
+      })
+      .where(eq(schema.CommentsTable.id, commentId))
+      .execute();
+
+    return await getCommentsOfPost(postId);
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
 // Helpers
 
 const PostQuery = async (userEmails: string[]) => {
@@ -274,12 +315,12 @@ const PostQuery = async (userEmails: string[]) => {
       authorEmail: schema.UsersTable.email,
       authorImage: schema.UsersTable.image,
       authorId: schema.UsersTable.id,
-      likes: sql<string[]>`array_agg(${schema.LikesTable.userEmail})`.as(
-        'likes'
-      ),
-      comments: sql<string[]>`array_agg(${schema.CommentsTable.content})`.as(
-        'comments'
-      ),
+      likes: sql<
+        string[]
+      >`array_agg(DISTINCT${schema.LikesTable.userEmail})`.as('likes'),
+      comments: sql<
+        string[]
+      >`array_agg(DISTINCT ${schema.CommentsTable.content})`.as('comments'),
     })
     .from(schema.PostsTable)
     .innerJoin(

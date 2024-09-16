@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { Button } from '../ui/button'
 import { createComment } from '@/drizzle/db'
 import { useGlobalContext } from '@/context/GlobalProvider'
-import { UserData } from '@/app/lib/types'
+import { Comment, UserData } from '@/app/lib/types'
 
-export default function CommentForm({ postId }: { postId: number }) {
+export default function CommentForm({ postId, setPostComments }: { postId: number, setPostComments: React.Dispatch<React.SetStateAction<Comment[]>> }) {
     const { userData } = useGlobalContext() as { userData: UserData }
     const [isCommenting, setIsCommenting] = useState(false as boolean)
     const [comment, setComment] = useState('' as string)
@@ -13,12 +13,15 @@ export default function CommentForm({ postId }: { postId: number }) {
         setIsCommenting(!isCommenting)
     }
 
-    const HandlePostComment = (e: any) => {
+    const HandlePostComment = async (e: any) => {
         e.preventDefault()
-        createComment(comment, userData.email, postId)
+        if (!comment) return
+        const res = await createComment(comment, userData.email, postId)
+
+        setPostComments(res)
         // set comment db call and refresh the comments under this post
         setComment('')
-        console.log(comment)
+
     }
     return (
         <div className='w-full flex flex-col gap-y-2 justify-center items-center my-2'>

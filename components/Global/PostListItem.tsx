@@ -1,6 +1,6 @@
-import { Comment, Post } from '@/app/lib/types'
+import { Comment, Post, UserData } from '@/app/lib/types'
 import { useGlobalContext } from '@/context/GlobalProvider'
-import { deletePost, getCommentsOfPost, getPostsOfFollowing, getUserPosts, ToggleLike } from '@/drizzle/db'
+import { deleteComment, deletePost, getCommentsOfPost, getPostsOfFollowing, getUserPosts, ToggleCommentLike, ToggleLike } from '@/drizzle/db'
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
@@ -9,11 +9,10 @@ import CommentForm from './CommentForm'
 
 export default function PostListItem({ post, isSessionUser = false, setPosts = () => { }, userEmail = undefined }: { post: Post, isSessionUser?: boolean, setPosts?: (posts?: Post[]) => void, userEmail: string | undefined },) {
 
-    const { userData, setUserPosts } = useGlobalContext() as { userData: any; setUserPosts: React.Dispatch<React.SetStateAction<Post[]>>; }
+    const { userData, setUserPosts } = useGlobalContext() as { userData: UserData; setUserPosts: React.Dispatch<React.SetStateAction<Post[]>>; }
     const [isLoading, setIsLoading] = useState(false)
 
     const [postComments, setPostCommnents] = useState([] as Comment[])
-
     // get all the comments on this post
 
     useEffect(() => {
@@ -50,6 +49,22 @@ export default function PostListItem({ post, isSessionUser = false, setPosts = (
         setIsLoading(false)
     }
 
+    const HandleToggleCommentLike = async (id: number) => {
+        setIsLoading(true)
+        const res = await ToggleCommentLike(post.id, id, userData.email)
+        setPostCommnents(res)
+        setIsLoading(false)
+    }
+
+    const HandleDeleteComment = async (id: number) => {
+        setIsLoading(true)
+        await deleteComment(id)
+        const comments = await getCommentsOfPost(post.id)
+        console.log(comments)
+        setPostCommnents(comments)
+        setIsLoading(false)
+    }
+
     return (
         <div className="p-2 border-slate-200 border m-1 w-80 flex flex-col rounded-md h-auto ">
             <Link href={`/profile/${post.authorId}`} className="w-full text-center border-b border-b-slate-200 p-2 mb-2 flex justify-start gap-x-4 items-center">
@@ -71,10 +86,10 @@ export default function PostListItem({ post, isSessionUser = false, setPosts = (
             </div>
             {
                 isSessionUser &&
-                <button onClick={() => handleDeletePost(post.id)} className="text-red-500 border-slate-200 rounded-md border m-2 mt-4">Delete Post</button>
+                <button disabled={isLoading} onClick={() => handleDeletePost(post.id)} className="text-red-500 border-slate-200 rounded-md border m-2 mt-4">Delete Post</button>
             }
             <div>
-                <CommentForm postId={post.id} />
+                <CommentForm postId={post.id} setPostComments={setPostCommnents} />
             </div>
             <div className='text-xl w-full text-center'>Comments:</div>
             {
@@ -83,7 +98,7 @@ export default function PostListItem({ post, isSessionUser = false, setPosts = (
                         return <div key={comment.id}>
                             <div className=" w-full justify-center p-1 items-center flex flex-col border border-slate-200 rounded-md my-1 text-xs">
                                 <div>
-                                    By: {comment.authorUsername}
+                                    By: {comment.authorUsername == userData.name ? "You" : comment.authorUsername}
                                 </div>
                                 <div className='p-2 text-lg'>
                                     {comment.content}
@@ -91,6 +106,16 @@ export default function PostListItem({ post, isSessionUser = false, setPosts = (
                                 <div className='text-slate-500 text-xs p-1'>
                                     On: {new Date(comment.createdAt).toDateString()}
                                 </div>
+                                <div className='text-xl flex justify-between items-center m-2 w-full'>
+                                    <Button disabled={isLoading} onClick={() => HandleToggleCommentLike(comment.id)} variant={'outline'}>{comment.likes && comment.likes.includes(userData.email) ? "Unlike" : "Like"}</Button>
+                                    <div>
+                                        {comment.likes ? comment.likes.length : 0} 👍
+                                    </div>
+                                </div>
+                                {comment.authorEmail === userData.email && <div>
+                                    <Button disabled={isLoading} variant={'destructive'} onClick={() => HandleDeleteComment(comment.id)}>Delete</Button>
+                                </div>}
+
                             </div>
                         </div>
                     }) : <div className='text-slate-500 w-full text-center'>No Comments</div>
