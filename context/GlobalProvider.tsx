@@ -1,7 +1,8 @@
 "use client"
 
 import { Post, UserData } from "@/app/lib/types";
-import { createUser, getUserByEmail, getUserPosts } from "@/drizzle/db";
+import { createUser, getUserByEmail } from "@/drizzle/db/userDb";
+import { getUserPosts } from "@/drizzle/db/postDb";
 import { useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
 

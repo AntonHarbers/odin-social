@@ -1,6 +1,6 @@
 "use client"
 
-import { createPost, getUserPosts } from '@/drizzle/db';
+import { createPost, getUserPosts } from '@/drizzle/db/postDb';
 import { useSession } from 'next-auth/react';
 import React from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form';

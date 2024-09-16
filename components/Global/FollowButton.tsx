@@ -1,5 +1,5 @@
 import { useGlobalContext } from "@/context/GlobalProvider"
-import { followUser, unfollowUser } from "@/drizzle/db"
+import { followUser, unfollowUser } from "@/drizzle/db/userDb"
 import { useState } from "react"
 import { Button } from "../ui/button"
 import { UserData } from "@/app/lib/types"

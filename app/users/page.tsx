@@ -1,5 +1,5 @@
 "use client"
-import { getUsers } from '@/drizzle/db'
+import { getUsers } from '@/drizzle/db/userDb'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'

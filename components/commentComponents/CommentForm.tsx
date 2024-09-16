@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Button } from '../ui/button'
-import { createComment } from '@/drizzle/db'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import { Comment, UserData } from '@/app/lib/types'
+import { createComment } from '@/drizzle/db/commentDb'
 
 export default function CommentForm({ postId, setPostComments }: { postId: number, setPostComments: React.Dispatch<React.SetStateAction<Comment[]>> }) {
     const { userData } = useGlobalContext() as { userData: UserData }
@@ -19,10 +19,9 @@ export default function CommentForm({ postId, setPostComments }: { postId: numbe
         const res = await createComment(comment, userData.email, postId)
 
         setPostComments(res)
-        // set comment db call and refresh the comments under this post
         setComment('')
-
     }
+
     return (
         <div className='w-full flex flex-col gap-y-2 justify-center items-center my-2'>
 

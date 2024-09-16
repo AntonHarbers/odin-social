@@ -17,9 +17,11 @@ export default function Profile() {
             <ProfileHeader user={userData} />
             <NewPostForm />
             <div className='flex flex-col  items-center gap-2 overflow-scroll h-[50vh]'>
+                <h1 className='text-3xl font-bold m-2 underline'>Your Posts</h1>
+                {sortedPostList(userPosts).length === 0 && <p>No posts yet</p>}
                 {sortedPostList(userPosts).map((post: Post) => {
                     return (
-                        <PostListItem key={post.id} post={post} isSessionUser />
+                        <PostListItem key={post.id} post={post} isSessionUser userEmail={undefined} />
                     )
                 })}
             </div>

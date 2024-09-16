@@ -1,7 +1,7 @@
 "use client"
 
 import { useGlobalContext } from "@/context/GlobalProvider";
-import { getPostsOfFollowing } from "@/drizzle/db";
+import { getPostsOfFollowing } from "@/drizzle/db/postDb";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Post, UserData } from "./lib/types";
@@ -35,7 +35,7 @@ export default function Home() {
   return (
     <div className="flex max-h-[90vh] flex-col items-center justify-start p-10 gap-6 overflow-y-scroll">
       {sortedPostList(posts).map((post: Post) => (
-        <PostListItem key={post.id} post={post} setPosts={(posts) => setPosts(posts ?? [])} />
+        <PostListItem key={post.id} post={post} setPosts={(posts) => setPosts(posts ?? [])} userEmail={undefined} />
       ))}
     </div>
   );
