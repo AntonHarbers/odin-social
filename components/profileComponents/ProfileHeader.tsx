@@ -12,10 +12,14 @@ export default function ProfileHeader({ user, isSessionUser = false, setUserData
 
     const [isEditing, setIsEditing] = useState(false)
 
-    const HandleEditBtnClick = async () => {
-        if (!isSessionUser) return
-        const res = await updateUserImageUrl('url', user)
+    const HandleEditProfileImage = async (url: string) => {
+        if (!isSessionUser) {
+            setIsEditing(false)
+            return
+        }
+        const res = await updateUserImageUrl(url, user)
         setUserData(res)
+        setIsEditing(false)
     }
 
     return (
@@ -26,12 +30,13 @@ export default function ProfileHeader({ user, isSessionUser = false, setUserData
                     endpoint="imageUploader"
                     onClientUploadComplete={(res) => {
                         // Do something with the response
-                        console.log("Files: ", res);
+                        HandleEditProfileImage(res[0].url)
                         alert("Upload Completed");
                     }}
                     onUploadError={(error: Error) => {
                         // Do something with the error.
                         alert(`ERROR! ${error.message}`);
+                        setIsEditing(false)
                     }}
                 />
                 :
