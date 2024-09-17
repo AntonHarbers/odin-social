@@ -8,13 +8,13 @@ import { sortedPostList } from '../lib/sortedPostList'
 import { Post, UserData } from '../lib/types'
 
 export default function Profile() {
-    const { userData, userPosts } = useGlobalContext() as { userData: UserData, userPosts: Post[] };
+    const { userData, setUserData, userPosts } = useGlobalContext() as { userData: UserData, setUserData: React.Dispatch<React.SetStateAction<UserData>>, userPosts: Post[] };
 
     if (!userData || !userPosts) return null
 
     return (
         <div>
-            <ProfileHeader user={userData} />
+            <ProfileHeader user={userData} setUserData={setUserData} isSessionUser />
             <NewPostForm />
             <div className='flex flex-col  items-center gap-2 overflow-scroll h-[50vh]'>
                 <h1 className='text-3xl font-bold m-2 underline'>Your Posts</h1>

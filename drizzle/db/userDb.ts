@@ -27,6 +27,25 @@ export const createUser = async (
   }
 };
 
+export const updateUserImageUrl = async (
+  newUrl: string,
+  userData: UserData
+): Promise<UserData> => {
+  try {
+    const updatedUser = await db
+      .update(UsersTable)
+      .set({ image: newUrl })
+      .where(eq(UsersTable.email, userData.email))
+      .returning()
+      .execute();
+
+    return updatedUser[0];
+  } catch (error) {
+    console.error(error);
+    return userData;
+  }
+};
+
 export const getUsers = async (): Promise<UserData[]> => {
   try {
     const users = await db.query.UsersTable.findMany();
