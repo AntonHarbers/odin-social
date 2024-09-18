@@ -1,9 +1,6 @@
 import { createRouteHandler } from 'uploadthing/next';
-import { ourFileRouter } from './core';
+import { ourFileRouter } from '../../../lib/uploadThing/core';
 
 export const { GET, POST } = createRouteHandler({
   router: ourFileRouter,
-  config: {
-    callbackUrl: 'http://localhost:3000/api/uploadthing/callback',
-  },
 });

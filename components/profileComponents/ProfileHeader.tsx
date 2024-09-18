@@ -24,7 +24,7 @@ export default function ProfileHeader({ user, isSessionUser = false, setUserData
 
     return (
         <div className="text-center items-center flex flex-col">
-            {isEditing
+            {(isEditing)
                 ?
                 <UploadButton
                     endpoint="imageUploader"
@@ -42,7 +42,7 @@ export default function ProfileHeader({ user, isSessionUser = false, setUserData
                 :
                 <div className="relative">
                     <Image className='rounded-3xl' src={user.image} width={100} height={100} alt="profile" />
-                    {isSessionUser &&
+                    {isSessionUser && user.email !== "guest@example.com" &&
                         <Button className="absolute top-0 right-0 m-0 px-2 rounded-xl" onClick={() => setIsEditing(true)}>
                             <EditIcon />
                         </Button>
